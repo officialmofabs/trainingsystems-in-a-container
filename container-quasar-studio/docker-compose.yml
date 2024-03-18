@@ -1,0 +1,62 @@
+version: '3.7'
+
+x-env_file:
+  &env_file
+  - ./.env
+
+services:
+  postgres-db:
+    image: postgres:13.0-alpine
+    env_file:
+      *env_file
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./conf/backend/Dockerfile
+    depends_on:
+      - postgres-db
+    env_file:
+      *env_file
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - ./code:/code
+      - ./conf/backend/scripts:/scripts
+      - backend-home:/home/user
+    init: true
+    command: ['/scripts/run.sh']
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./conf/frontend/Dockerfile
+    env_file:
+      *env_file
+    volumes:
+      - ./code:/code
+      - ./conf/frontend/scripts:/scripts
+      - frontend-home:/home/user
+    init: true
+    command: ['/scripts/run.sh']
+
+  nginx:
+    image: nginx:1.19-alpine
+    env_file:
+      *env_file
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./conf/nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
+      - ./conf/nginx/run.sh:/run.sh
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    command: ['/run.sh']
+
+volumes:
+  postgres-db:
+  backend-home:
+  frontend-home:
