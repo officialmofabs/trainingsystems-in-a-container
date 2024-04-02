@@ -1,0 +1,8 @@
+{
+    "profiles": {
+        "SchemaManager": {
+            "commandName": "Project",
+            "commandLineArgs": "eCampuslearning.SchemaManager apply --connection-string \"server=(local);Initial Catalog=ECAMPUSLEARNING;Integrated Security=true\" --server https://localhost:63637 --version 3"
+        }
+    }
+}
